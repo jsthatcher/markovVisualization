@@ -20,6 +20,8 @@ $(function(){
 
 function Bot(){
     this.dictionary = []
+    this.nodes = [{"name":"I","group":2},
+    {"name":"am","group":2}]
 };
 
 function Node(){
@@ -34,6 +36,18 @@ Bot.prototype.textToArray = function(text){
     return array;
 }
 
+Bot.prototype.addGraphInfo = function(node){
+    var nodeText = node.first + " | " + node.last
+    if (node.isStarter === true) {
+        var group = 2
+    }else{
+        var group = 1
+    }
+
+    this.nodes.push({"name":nodeText,"group":group});
+
+}
+
 
 
 Bot.prototype.addStatement = function(text){
@@ -42,6 +56,8 @@ Bot.prototype.addStatement = function(text){
 
     while (array.length > 1){
         var newNode = new Node()
+
+
         newNode.first = array[0]
         newNode.last = array[1]
         newNode.isStarter = isStarter
@@ -49,6 +65,7 @@ Bot.prototype.addStatement = function(text){
         if (array[0].includes(".") || array[0].includes("?")){
             isStarter = true
         }
+        this.addGraphInfo(newNode);
         this.dictionary.push(newNode);
         array.shift();
     }
