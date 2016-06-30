@@ -31,7 +31,7 @@ function Node(){
     this.firstString = ""
     this.lastString = ""
     this.isStarter = false
-    this.probability = 1
+    this.probability = 1.0
     this.count = 1
 }
 
@@ -56,7 +56,7 @@ Bot.prototype.addStatement = function(text){
         newNode.isStarter = isStarter
         newNode.probability = this.findProbability(newNode)
 
-        isStarter = array[0].includes(".") || array[0].includes("?")
+        isStarter = (array[0].includes(".") || array[0].includes("?"))
 
 
         if (this.isPresent(array[0],array[1])){
@@ -74,7 +74,6 @@ Bot.prototype.addStatement = function(text){
 Bot.prototype.isPresent = function(firstString,lastString){
     for (var i in this.dictionary){
         if (this.dictionary[i].firstString === firstString && this.dictionary[i].lastString === lastString){
-            console.log(this.dictionary[i].count)
             return true;
         }
     }
@@ -93,20 +92,19 @@ Bot.prototype.addCount = function(firstString,lastString){
 
 Bot.prototype.findProbability = function(node){
     var totalCount = 0
+    var probability = 1
 
     var nodeArray = this.findPossbileNodes(node);
     if (nodeArray.length === 0){
-        return 1;
+        return 1.0;
     }else{
-        var totalCount = 0
-        for (var i in nodeArray){
-            totalCount =+ nodeArray[i].count
+        for (var i = 0; i < nodeArray.length; i++) {
+            totalCount += nodeArray[i].count;
         }
+        probability = node.count/totalCount;
     }
-    
-    console.log(totalCount)
-    return 4
-    // var probability = node.count
+
+    return probability
 }
 
 Bot.prototype.reply = function(replyLength){
@@ -147,9 +145,29 @@ Bot.prototype.gatherNodes = function(starter,replyLength){
         console.log(replyNodes[(replyNodes.length - 1)])
         possibleNodes = this.findPossbileNodes(replyNodes[(replyNodes.length - 1)])
         var selectedNode = possibleNodes.randomValue();
+        var fuck = this.selectNode(possibleNodes);
         replyNodes.push(selectedNode)
     }
     return replyNodes
+}
+
+Bot.prototype.selectNode = function(nodeArray){
+    var totalCount = 0
+    var counter = 0
+
+    for (var i = 0; i < nodeArray.length; i++){
+        totalCount += nodeArray[i].count;
+    }
+    var randomValue = Math.random() * totalCount
+
+    for (var i = 0; i < nodeArray.length; i++){
+        counter += nodeArray[i].count;
+        if (counter > randomValue){
+            return nodeArray[i];
+        }
+    }
+
+    console.log("you should not be here (selectNode")
 }
 
 Bot.prototype.findPossbileNodes = function(previousNode){
