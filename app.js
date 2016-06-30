@@ -20,18 +20,14 @@ $(function(){
 });
 
 
-
 function Bot(){
     this.dictionary = []
-    this.nodes = [{"name":"I","group":2},
-    {"name":"am","group":2}]
 };
 
 function Node(){
     this.firstString = ""
     this.lastString = ""
     this.isStarter = false
-    this.probability = 1.0
     this.count = 1
 }
 
@@ -41,7 +37,6 @@ Bot.prototype.textToArray = function(text){
     return array;
 }
 
-
 Bot.prototype.addStatement = function(text){
     var array = bot.textToArray(text);
     var isStarter = true
@@ -50,25 +45,19 @@ Bot.prototype.addStatement = function(text){
 
         var newNode = new Node()
 
-
         newNode.firstString = array[0]
         newNode.lastString = array[1]
         newNode.isStarter = isStarter
-        newNode.probability = this.findProbability(newNode)
 
         isStarter = (array[0].includes(".") || array[0].includes("?"))
-
 
         if (this.isPresent(array[0],array[1])){
             this.addCount(array[0],array[1])
         }else{
             this.dictionary.push(newNode);
         }
-
-        
         array.shift();
     }
-    // console.log(this.dictionary)
 }
 
 Bot.prototype.isPresent = function(firstString,lastString){
@@ -90,23 +79,6 @@ Bot.prototype.addCount = function(firstString,lastString){
 
 
 
-Bot.prototype.findProbability = function(node){
-    var totalCount = 0
-    var probability = 1
-
-    var nodeArray = this.findPossbileNodes(node);
-    if (nodeArray.length === 0){
-        return 1.0;
-    }else{
-        for (var i = 0; i < nodeArray.length; i++) {
-            totalCount += nodeArray[i].count;
-        }
-        probability = node.count/totalCount;
-    }
-
-    return probability
-}
-
 Bot.prototype.reply = function(replyLength){
     var starter = this.findStarter()
     var nodes = this.gatherNodes(starter,replyLength - 1);    
@@ -123,19 +95,11 @@ Bot.prototype.findStarter = function(){
             starterArray.push(this.dictionary[i])
         }
     }
-    return starterArray.randomValue();
+
+    return this.selectNode(starterArray);
 }
 
-Bot.prototype.nodeToString = function(nodes){
-    var replyString = nodes[0].firstString + " " + nodes[0].lastString;
-    nodes.shift();
 
-    for (var i = 0; i < nodes.length; i++){
-        var word = nodes[i].lastString;
-        replyString = replyString + " " + word;
-    }
-    return replyString;
-}
 
 Bot.prototype.gatherNodes = function(starter,replyLength){
     var possibleNodes = [];
@@ -144,11 +108,22 @@ Bot.prototype.gatherNodes = function(starter,replyLength){
     while (replyNodes.length < replyLength){
         console.log(replyNodes[(replyNodes.length - 1)])
         possibleNodes = this.findPossbileNodes(replyNodes[(replyNodes.length - 1)])
-        var selectedNode = possibleNodes.randomValue();
-        var fuck = this.selectNode(possibleNodes);
+        var selectedNode = this.selectNode(possibleNodes);
         replyNodes.push(selectedNode)
     }
     return replyNodes
+}
+
+Bot.prototype.findPossbileNodes = function(previousNode){
+    var firstString = previousNode.lastString;
+    var resultArray = []
+
+    for (var i = 0; i < this.dictionary.length; i++){
+        if (this.dictionary[i].firstString === firstString){
+            resultArray.push(this.dictionary[i])
+        }
+    }
+    return resultArray;
 }
 
 Bot.prototype.selectNode = function(nodeArray){
@@ -166,40 +141,41 @@ Bot.prototype.selectNode = function(nodeArray){
             return nodeArray[i];
         }
     }
-
-    console.log("you should not be here (selectNode")
+    alert("you should not be here (selectNode")
 }
 
-Bot.prototype.findPossbileNodes = function(previousNode){
-    var firstString = previousNode.lastString;
-    var resultArray = []
+Bot.prototype.nodeToString = function(nodes){
+    var replyString = nodes[0].firstString + " " + nodes[0].lastString;
+    nodes.shift();
 
-    for (var i = 0; i < this.dictionary.length; i++){
-        if (this.dictionary[i].firstString === firstString){
-            resultArray.push(this.dictionary[i])
-        }
+    for (var i = 0; i < nodes.length; i++){
+        var word = nodes[i].lastString;
+        replyString = replyString + " " + word;
     }
-    return resultArray;
-};
-
-Array.prototype.randomValue = function(){
-    return this[Math.floor(Math.random() * this.length)]
+    return replyString;
 }
+
+
+Bot.prototype.findProbability = function(node){
+    var totalCount = 0
+    var probability = 1
+
+    var nodeArray = this.findPossbileNodes(node);
+    if (nodeArray.length === 0){
+        return 1.0;
+    }else{
+        for (var i = 0; i < nodeArray.length; i++) {
+            totalCount += nodeArray[i].count;
+        }
+        probability = node.count/totalCount;
+    }
+
+    return probability
+}
+
 
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;
 
     return target.split(search).join(replacement);
 };
-
-
-// Bot.prototype.addGraphInfo = function(node){
-//     var nodeText = node.firstString + " | " + node.lastString
-//     if (node.isStarter === true) {
-//         var group = 2
-//     }else{
-//         var group = 1
-//     }
-
-//     this.nodes.push({"name":nodeText,"group":group});
-// }
