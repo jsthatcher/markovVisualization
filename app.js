@@ -2,6 +2,7 @@ var bot = new Bot()
 
 $(function(){
 
+
     $( document ).keypress(function(event) {
         // event.preventDefault();
         if(event.which == 13){
@@ -18,6 +19,8 @@ $(function(){
       });
 });
 
+
+
 function Bot(){
     this.dictionary = []
     this.nodes = [{"name":"I","group":2},
@@ -25,9 +28,11 @@ function Bot(){
 };
 
 function Node(){
-    this.first = ""
-    this.last = ""
+    this.firstString = ""
+    this.lastString = ""
     this.isStarter = false
+    this.probability = 1
+    this.count = 1
 }
 
 Bot.prototype.textToArray = function(text){
@@ -36,44 +41,76 @@ Bot.prototype.textToArray = function(text){
     return array;
 }
 
-Bot.prototype.addGraphInfo = function(node){
-    var nodeText = node.first + " | " + node.last
-    if (node.isStarter === true) {
-        var group = 2
-    }else{
-        var group = 1
-    }
-
-    this.nodes.push({"name":nodeText,"group":group});
-
-}
-
-
 
 Bot.prototype.addStatement = function(text){
     var array = bot.textToArray(text);
     var isStarter = true
 
     while (array.length > 1){
+
         var newNode = new Node()
 
 
-        newNode.first = array[0]
-        newNode.last = array[1]
+        newNode.firstString = array[0]
+        newNode.lastString = array[1]
         newNode.isStarter = isStarter
-        isStarter = false
-        if (array[0].includes(".") || array[0].includes("?")){
-            isStarter = true
+        newNode.probability = this.findProbability(newNode)
+
+        isStarter = array[0].includes(".") || array[0].includes("?")
+
+
+        if (this.isPresent(array[0],array[1])){
+            this.addCount(array[0],array[1])
+        }else{
+            this.dictionary.push(newNode);
         }
-        this.addGraphInfo(newNode);
-        this.dictionary.push(newNode);
+
+        
         array.shift();
     }
     // console.log(this.dictionary)
 }
 
+Bot.prototype.isPresent = function(firstString,lastString){
+    for (var i in this.dictionary){
+        if (this.dictionary[i].firstString === firstString && this.dictionary[i].lastString === lastString){
+            console.log(this.dictionary[i].count)
+            return true;
+        }
+    }
+    return false;
+}
+
+Bot.prototype.addCount = function(firstString,lastString){
+    for (var i in this.dictionary){
+        if (this.dictionary[i].firstString === firstString && this.dictionary[i].lastString === lastString){
+            this.dictionary[i].count += 1
+        }
+    }
+}
+
+
+
+Bot.prototype.findProbability = function(node){
+    var totalCount = 0
+
+    var nodeArray = this.findPossbileNodes(node);
+    if (nodeArray.length === 0){
+        return 1;
+    }else{
+        var totalCount = 0
+        for (var i in nodeArray){
+            totalCount =+ nodeArray[i].count
+        }
+    }
+    
+    console.log(totalCount)
+    return 4
+    // var probability = node.count
+}
+
 Bot.prototype.reply = function(replyLength){
-    var starter = [this.findStarter()]
+    var starter = this.findStarter()
     var nodes = this.gatherNodes(starter,replyLength - 1);    
     var reply = this.nodeToString(nodes)
 
@@ -92,11 +129,11 @@ Bot.prototype.findStarter = function(){
 }
 
 Bot.prototype.nodeToString = function(nodes){
-    var replyString = nodes[0].first + " " + nodes[0].last;
+    var replyString = nodes[0].firstString + " " + nodes[0].lastString;
     nodes.shift();
 
     for (var i = 0; i < nodes.length; i++){
-        var word = nodes[i].last;
+        var word = nodes[i].lastString;
         replyString = replyString + " " + word;
     }
     return replyString;
@@ -104,9 +141,10 @@ Bot.prototype.nodeToString = function(nodes){
 
 Bot.prototype.gatherNodes = function(starter,replyLength){
     var possibleNodes = [];
-    var replyNodes = starter;
+    var replyNodes = [starter];
 
     while (replyNodes.length < replyLength){
+        console.log(replyNodes[(replyNodes.length - 1)])
         possibleNodes = this.findPossbileNodes(replyNodes[(replyNodes.length - 1)])
         var selectedNode = possibleNodes.randomValue();
         replyNodes.push(selectedNode)
@@ -115,11 +153,11 @@ Bot.prototype.gatherNodes = function(starter,replyLength){
 }
 
 Bot.prototype.findPossbileNodes = function(previousNode){
-    var first = previousNode.last;
+    var firstString = previousNode.lastString;
     var resultArray = []
 
     for (var i = 0; i < this.dictionary.length; i++){
-        if (this.dictionary[i].first === first){
+        if (this.dictionary[i].firstString === firstString){
             resultArray.push(this.dictionary[i])
         }
     }
@@ -135,3 +173,15 @@ String.prototype.replaceAll = function(search, replacement) {
 
     return target.split(search).join(replacement);
 };
+
+
+// Bot.prototype.addGraphInfo = function(node){
+//     var nodeText = node.firstString + " | " + node.lastString
+//     if (node.isStarter === true) {
+//         var group = 2
+//     }else{
+//         var group = 1
+//     }
+
+//     this.nodes.push({"name":nodeText,"group":group});
+// }
