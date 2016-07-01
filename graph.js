@@ -1,11 +1,6 @@
 
 // create an array with nodes
-var nodes = new vis.DataSet([
-	{id:1,label:"fuck"},
-	{id:2,label:"fuck"},
-	{id:3,label:"fuck"},
-	{id:4,label:"fuck"},]
-	);
+var nodes = new vis.DataSet([]);
 
 // create an array with edges
 var edges = new vis.DataSet([]);

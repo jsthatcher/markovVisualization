@@ -8,13 +8,18 @@ $(function(){
         if(event.which == 13){
             var statement = $( "#statement" ).val();
             var replyLength = $( "#replyLength" ).val();
+            // var generateReply = $( "#generateReply").val();
             bot.addStatement(statement);
             var newData = bot.updateGraph();
             network.setData(newData);
-            var reply = bot.reply(replyLength);
-            // $( "#statement" ).val('');
+
+            $( "#statement" ).val('');
             $( "#top" ).append("<tr><td class='statement'>" + statement + " </td></tr>")
-            $( "#top" ).append("<tr><td class='reply'>" + reply + " </td></tr>")
+            
+            if (document.getElementById("generateReply").checked === true){
+                var reply = bot.reply(replyLength);
+                $( "#top" ).append("<tr><td class='reply'>" + reply + " </td></tr>")
+            }
             event.preventDefault();
         }
 
