@@ -39,9 +39,17 @@ function Node(){
 }
 
 Bot.prototype.graphNodeIsPresent = function(graphNode){
-
     for (var i in this.graphData.nodes){
         if (this.graphData.nodes[i].label === graphNode.label){
+            return true;
+        }
+    }
+    return false   
+}
+
+Bot.prototype.graphEdgeIsPresent = function(graphEdge){
+    for (var i in this.graphData.edges){
+        if (this.graphData.edges[i].to === graphEdge.to && this.graphData.edges[i].from === graphEdge.from){
             return true;
         }
     }
@@ -66,6 +74,26 @@ Bot.prototype.createGraphNodes = function(pastNodes){
 }
 
 Bot.prototype.createGraphEdges = function(pastEdges){
+    console.log(this.dictionary)
+    for (var parentIndex in this.dictionary){
+        var graphEdge = {}
+        var lastString = this.dictionary[parentIndex].lastString
+
+        for (var childIndex in this.dictionary){
+            var firstString = this.dictionary[childIndex].firstString
+
+            if (lastString === firstString){
+                graphEdge.from = parentIndex
+                graphEdge.to = childIndex
+                graphEdge.arrows = 'to'
+            }
+        }
+        if (!this.graphEdgeIsPresent(graphEdge)){
+            pastEdges.push(graphEdge)
+        } 
+    }
+    console.log(pastEdges);
+
     return pastEdges
 }
 
@@ -79,7 +107,7 @@ Bot.prototype.updateGraph = function(){
     var nodeData = new vis.DataSet(graphNodes);
     var edgeData = new vis.DataSet(graphEdges);
     var dataSet = {nodes: nodeData, edges: edgeData}
-    console.log(dataSet);
+    // console.log(dataSet);
     this.graphData = {nodes: graphNodes, edges: graphEdges}
     return dataSet
 
@@ -138,7 +166,7 @@ Bot.prototype.reply = function(replyLength){
     var nodes = this.gatherNodes(starter,replyLength - 1);    
     var reply = this.nodeToString(nodes)
 
-    console.log(this.dictionary.length)
+    // console.log(this.dictionary.length)
 
     return reply;
 }
