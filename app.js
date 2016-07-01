@@ -8,14 +8,13 @@ $(function(){
         if(event.which == 13){
             var statement = $( "#statement" ).val();
             var replyLength = $( "#replyLength" ).val();
-            // var generateReply = $( "#generateReply").val();
             bot.addStatement(statement);
             var newData = bot.updateGraph();
             network.setData(newData);
 
             $( "#statement" ).val('');
             $( "#top" ).append("<tr><td class='statement'>" + statement + " </td></tr>")
-            
+
             if (document.getElementById("generateReply").checked === true){
                 var reply = bot.reply(replyLength);
                 $( "#top" ).append("<tr><td class='reply'>" + reply + " </td></tr>")
@@ -39,19 +38,44 @@ function Node(){
     this.count = 1
 }
 
-Bot.prototype.updateGraph = function(){
-    var graphEdges = this.graphData.nodes
-    var graphNodes = this.graphData.edges
+Bot.prototype.graphNodeIsPresent = function(graphNode){
+
+    for (var i in this.graphData.nodes){
+        if (this.graphData.nodes[i].label === graphNode.label){
+            return true;
+        }
+    }
+    return false   
+}
+
+Bot.prototype.createGraphNodes = function(pastNodes){
     var labelString = ""
     var id = 0
     for (var i in this.dictionary){
         var graphNode = {}
         labelString = this.dictionary[i].firstString + " | " + this.dictionary[i].lastString
-        id = graphNodes.length
+        id = pastNodes.length
         graphNode.id = id
         graphNode.label = labelString
-        graphNodes.push(graphNode)
+        if (!this.graphNodeIsPresent(graphNode)){
+            pastNodes.push(graphNode)
+        }
+        
     }
+    return pastNodes;
+}
+
+Bot.prototype.createGraphEdges = function(pastEdges){
+    return pastEdges
+}
+
+Bot.prototype.updateGraph = function(){
+    var pastEdges = this.graphData.edges
+    var pastNodes = this.graphData.nodes
+    
+    var graphNodes = this.createGraphNodes(pastNodes);
+    var graphEdges = this.createGraphEdges(pastEdges);
+
     var nodeData = new vis.DataSet(graphNodes);
     var edgeData = new vis.DataSet(graphEdges);
     var dataSet = {nodes: nodeData, edges: edgeData}
