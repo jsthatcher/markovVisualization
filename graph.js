@@ -13,7 +13,18 @@ var data = {
     nodes: nodes,
     edges: edges
 };
-var options = {};
+var options = {
+	autoResize: true,
+	hierarchical: {
+      enabled:false,
+      levelSeparation: 150,
+      nodeSpacing: 300,
+      treeSpacing: 200,
+      blockShifting: true,
+      edgeMinimization: true,
+      parentCentralization: true
+    }
+};
 
 // initialize your network!
 var network = new vis.Network(container, data, options);
