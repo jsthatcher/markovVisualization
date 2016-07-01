@@ -9,8 +9,8 @@ $(function(){
             var statement = $( "#statement" ).val();
             var replyLength = $( "#replyLength" ).val();
             bot.addStatement(statement);
-            var crap = bot.updateGraph();
-            network.setData(crap);
+            var newData = bot.updateGraph();
+            network.setData(newData);
             var reply = bot.reply(replyLength);
             // $( "#statement" ).val('');
             $( "#top" ).append("<tr><td class='statement'>" + statement + " </td></tr>")
