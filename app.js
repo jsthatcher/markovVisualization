@@ -1,5 +1,9 @@
 var bot = new Bot()
 
+var nodeOptions = {
+    font: "30px ariel red"
+}
+
 $(function(){
 
 
@@ -9,12 +13,16 @@ $(function(){
             var statement = $( "#statement" ).val();
             var replyLength = $( "#replyLength" ).val();
             bot.addStatement(statement);
-            var newData = bot.updateGraph();
+            var newData = bot.createGraphData();
             network.setData(newData);
-            var reply = bot.reply(replyLength);
-            // $( "#statement" ).val('');
+
+            $( "#statement" ).val('');
             $( "#top" ).append("<tr><td class='statement'>" + statement + " </td></tr>")
-            $( "#top" ).append("<tr><td class='reply'>" + reply + " </td></tr>")
+
+            if (document.getElementById("generateReply").checked === true){
+                var reply = bot.reply(replyLength);
+                $( "#top" ).append("<tr><td class='reply'>" + reply + " </td></tr>")
+            }
             event.preventDefault();
         }
 
@@ -34,24 +42,70 @@ function Node(){
     this.count = 1
 }
 
-Bot.prototype.updateGraph = function(){
-    var graphEdges = this.graphData.nodes
-    var graphNodes = this.graphData.edges
-    var labelString = ""
-    var id = 0
+Bot.prototype.graphNodeIsPresent = function(graphNode){
+    for (var i in this.graphData.nodes){
+        if (this.graphData.nodes[i].label === graphNode.label){
+            return true;
+        }
+    }
+    return false;
+}
+
+Bot.prototype.graphEdgeIsPresent = function(graphEdge){
+    for (var i in this.graphData.edges){
+        if (this.graphData.edges[i].to === graphEdge.to && this.graphData.edges[i].from === graphEdge.from){
+            return true;
+        }
+    }
+    return false; 
+}
+
+Bot.prototype.createGraphNodes = function(){
+    var graphNodeArray = [];
+    var labelString = "";
+    var id = 0;
     for (var i in this.dictionary){
         var graphNode = {}
         labelString = this.dictionary[i].firstString + " | " + this.dictionary[i].lastString
-        id = graphNodes.length
+        id = graphNodeArray.length
         graphNode.id = id
         graphNode.label = labelString
-        graphNodes.push(graphNode)
+        graphNode.physics = true
+        // graphNode.options.nodeOptions;
+        graphNodeArray.push(graphNode)
     }
+    return graphNodeArray;
+}
+
+Bot.prototype.createGraphEdges = function(){
+    var edgeArray = []
+    console.log(this.dictionary)
+    for (var parentIndex in this.dictionary){
+        var graphEdge = {}
+        var lastString = this.dictionary[parentIndex].lastString
+
+        for (var childIndex in this.dictionary){
+            var firstString = this.dictionary[childIndex].firstString
+
+            if (lastString === firstString){
+                graphEdge.from = parentIndex
+                graphEdge.to = childIndex
+                graphEdge.arrows = 'to'
+            }
+        }
+        edgeArray.push(graphEdge)
+    }
+    return edgeArray
+}
+
+Bot.prototype.createGraphData = function(){
+    var graphNodes = this.createGraphNodes();
+    var graphEdges = this.createGraphEdges();
+
     var nodeData = new vis.DataSet(graphNodes);
     var edgeData = new vis.DataSet(graphEdges);
     var dataSet = {nodes: nodeData, edges: edgeData}
-    console.log(dataSet);
-    this.graphData = {nodes: graphNodes, edges: graphEdges}
+    // console.log(dataSet);
     return dataSet
 
 }
@@ -109,7 +163,7 @@ Bot.prototype.reply = function(replyLength){
     var nodes = this.gatherNodes(starter,replyLength - 1);    
     var reply = this.nodeToString(nodes)
 
-    console.log(this.dictionary.length)
+    // console.log(this.dictionary.length)
 
     return reply;
 }
@@ -122,7 +176,6 @@ Bot.prototype.findStarter = function(){
             starterArray.push(this.dictionary[i])
         }
     }
-
     return this.selectNode(starterArray);
 }
 
@@ -135,6 +188,7 @@ Bot.prototype.gatherNodes = function(starter,replyLength){
     while (replyNodes.length < replyLength){
         // console.log(replyNodes[(replyNodes.length - 1)])
         possibleNodes = this.findPossbileNodes(replyNodes[(replyNodes.length - 1)])
+
         var selectedNode = this.selectNode(possibleNodes);
         replyNodes.push(selectedNode)
     }
@@ -168,7 +222,8 @@ Bot.prototype.selectNode = function(nodeArray){
             return nodeArray[i];
         }
     }
-    alert("you should not be here :selectNode")
+
+    return this.findStarter();
 }
 
 Bot.prototype.nodeToString = function(nodes){
@@ -186,8 +241,8 @@ Bot.prototype.nodeToString = function(nodes){
 Bot.prototype.findProbability = function(node){
     var totalCount = 0
     var probability = 1.0
-
     var nodeArray = this.findPossbileNodes(node);
+
     if (nodeArray.length === 0){
         return 1.0;
     }else{
@@ -203,6 +258,5 @@ Bot.prototype.findProbability = function(node){
 
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;
-
     return target.split(search).join(replacement);
 };

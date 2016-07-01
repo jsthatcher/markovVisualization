@@ -1,11 +1,6 @@
 
 // create an array with nodes
-var nodes = new vis.DataSet([
-	{id:1,label:"fuck"},
-	{id:2,label:"fuck"},
-	{id:3,label:"fuck"},
-	{id:4,label:"fuck"},]
-	);
+var nodes = new vis.DataSet([]);
 
 // create an array with edges
 var edges = new vis.DataSet([]);
@@ -18,7 +13,18 @@ var data = {
     nodes: nodes,
     edges: edges
 };
-var options = {};
+var options = {
+	autoResize: true,
+	hierarchical: {
+      enabled:false,
+      levelSeparation: 150,
+      nodeSpacing: 300,
+      treeSpacing: 200,
+      blockShifting: true,
+      edgeMinimization: true,
+      parentCentralization: true
+    }
+};
 
 // initialize your network!
 var network = new vis.Network(container, data, options);
