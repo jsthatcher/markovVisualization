@@ -9,8 +9,10 @@ $(function(){
             var statement = $( "#statement" ).val();
             var replyLength = $( "#replyLength" ).val();
             bot.addStatement(statement);
+            var newData = bot.updateGraph();
+            network.setData(newData);
             var reply = bot.reply(replyLength);
-            $( "#statement" ).val('');
+            // $( "#statement" ).val('');
             $( "#top" ).append("<tr><td class='statement'>" + statement + " </td></tr>")
             $( "#top" ).append("<tr><td class='reply'>" + reply + " </td></tr>")
             event.preventDefault();
@@ -22,6 +24,7 @@ $(function(){
 
 function Bot(){
     this.dictionary = []
+    this.graphData = {nodes:[],edges:[]}
 };
 
 function Node(){
@@ -29,6 +32,28 @@ function Node(){
     this.lastString = ""
     this.isStarter = false
     this.count = 1
+}
+
+Bot.prototype.updateGraph = function(){
+    var graphEdges = this.graphData.nodes
+    var graphNodes = this.graphData.edges
+    var labelString = ""
+    var id = 0
+    for (var i in this.dictionary){
+        var graphNode = {}
+        labelString = this.dictionary[i].firstString + " | " + this.dictionary[i].lastString
+        id = graphNodes.length
+        graphNode.id = id
+        graphNode.label = labelString
+        graphNodes.push(graphNode)
+    }
+    var nodeData = new vis.DataSet(graphNodes);
+    var edgeData = new vis.DataSet(graphEdges);
+    var dataSet = {nodes: nodeData, edges: edgeData}
+    console.log(dataSet);
+    this.graphData = {nodes: graphNodes, edges: graphEdges}
+    return dataSet
+
 }
 
 Bot.prototype.textToArray = function(text){
@@ -84,6 +109,8 @@ Bot.prototype.reply = function(replyLength){
     var nodes = this.gatherNodes(starter,replyLength - 1);    
     var reply = this.nodeToString(nodes)
 
+    console.log(this.dictionary.length)
+
     return reply;
 }
 
@@ -106,7 +133,7 @@ Bot.prototype.gatherNodes = function(starter,replyLength){
     var replyNodes = [starter];
 
     while (replyNodes.length < replyLength){
-        console.log(replyNodes[(replyNodes.length - 1)])
+        // console.log(replyNodes[(replyNodes.length - 1)])
         possibleNodes = this.findPossbileNodes(replyNodes[(replyNodes.length - 1)])
         var selectedNode = this.selectNode(possibleNodes);
         replyNodes.push(selectedNode)
@@ -141,7 +168,7 @@ Bot.prototype.selectNode = function(nodeArray){
             return nodeArray[i];
         }
     }
-    alert("you should not be here (selectNode")
+    alert("you should not be here :selectNode")
 }
 
 Bot.prototype.nodeToString = function(nodes){
@@ -158,7 +185,7 @@ Bot.prototype.nodeToString = function(nodes){
 
 Bot.prototype.findProbability = function(node){
     var totalCount = 0
-    var probability = 1
+    var probability = 1.0
 
     var nodeArray = this.findPossbileNodes(node);
     if (nodeArray.length === 0){

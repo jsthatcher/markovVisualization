@@ -1,12 +1,21 @@
 html{
 	background-color: white;
 }
+
+#mynetwork {
+    width: 600px;
+    height: 400px;
+    border: 1px solid lightgray;
+}
+
 .link{
 	color: black;
 }
+
 .statement{
 	color: red;
 }
+
 .reply{
 	color: blue;
 }
