@@ -14,16 +14,16 @@ var data = {
     edges: edges
 };
 var options = {
-	autoResize: true,
-	hierarchical: {
-      enabled:false,
-      levelSeparation: 150,
-      nodeSpacing: 300,
-      treeSpacing: 200,
-      blockShifting: true,
-      edgeMinimization: true,
-      parentCentralization: true
-    }
+	autoResize: true
+	// hierarchical: {
+ //      enabled:false,
+ //      levelSeparation: 150,
+ //      nodeSpacing: 300,
+ //      treeSpacing: 200,
+ //      blockShifting: true,
+ //      edgeMinimization: true,
+ //      parentCentralization: true
+ //    }
 };
 
 // initialize your network!
